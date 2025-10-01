@@ -1,21 +1,20 @@
 from sentence_transformers import SentenceTransformer
 import chromadb
 
-# 1. تحميل الموديل من HuggingFace (مجاني وسريع)
+
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-
-query = "Mice behavior during a flight"
-query_embedding = model.encode([query]).tolist()
-
 client = chromadb.PersistentClient(path="chroma_db")
 
-collection = client.get_collection(name="research_papers")
+def get_question_answer(question):
+    query = question
+    query_embedding = model.encode([query]).tolist()
 
-results = collection.query(
-    query_embeddings=query_embedding,
-    n_results=2
-)
+    collection = client.get_collection(name="research_papers")
 
-print("Query results:")
-for doc in results["documents"][0]:
-    print("-", doc)
+    results = collection.query(
+        query_embeddings=query_embedding,
+        n_results=10
+    )
+    return results["documents"][0]
+
+
