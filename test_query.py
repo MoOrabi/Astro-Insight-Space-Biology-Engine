@@ -13,8 +13,12 @@ def get_question_answer(question):
 
     results = collection.query(
         query_embeddings=query_embedding,
-        n_results=10
+        n_results=5
     )
-    return results["documents"][0]
+
+    return {
+        "documents": results["documents"],
+        "metadata": results["metadatas"]
+    }
 
 
