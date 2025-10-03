@@ -7,9 +7,9 @@ CORS(app)
 
 @app.route('/ask', methods=['GET'])
 def get_question_response():
-    data = request.get_json()
-    question = data.get('question')
+    question = request.args.get('question')  # هنا ناخدها من query string
     return test_query.get_question_answer(question)
+
 
 @app.route('/ask-test', methods=['GET'])
 def get_question_response_test():
