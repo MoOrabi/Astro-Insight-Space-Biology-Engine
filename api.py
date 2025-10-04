@@ -13,40 +13,30 @@ def get_question_response():
 
 @app.route('/ask-test', methods=['GET'])
 def get_question_response_test():
-    data = request.get_json()
-    citations = []
     citations_names_with_year = []
 
-    metas = [
+    citations = [
         {
-            "id": "doc1",
-            "url": "https://nasa.gov/pub123",
-            "title": "Bone Density in Space",
-            "author": "Smith et al.",
-            "year": "2018"
-        },
-        {
-            "id": "doc2",
-            "url": "https://nasa.gov/pub456",
-            "title": "Countermeasures for Bone Loss",
-            "author": "Johnson & Lee",
-            "year": "2020"
+            "title": "Mice in Bion-M 1 Space Mission: Training and Selection",
+            "url": "https://google.com",
+            "year": 2014
         }
     ]
-    for m in metas:
-        citations.append({
-            "url": m.get("url", ""),
-            "title": m.get("title", "")
-        })
+    for c in citations:
         citations_names_with_year.append({
-            "title": m.get("title", ""),
-            "year": m.get("year", "")
+            "title": c.get("title", ""),
+            "year": c.get("year", "")
         })
 
     return {
-        "answer": "Your connection to backend is working alright, and your question is " + data.get("question")
-        + ", Good Job",
+        "answer": "The purpose of the Bion-M 1 mission was to elucidate cellular and molecular mechanisms, underlying the adaptation of key physiological systems to long-term exposure in microgravity. "
+                  "The scientific program of the Bion-M 1 project was aimed at obtaining data on mechanisms of adaptation of muscle, bone, cardiovascular, sensorimotor and nervous systems to prolonged exposure in microgravity and during post-flight recovery."
+                  " After the flight, mice were in good condition for biomedical studies and displayed signs of pronounced disadaptation to Earth's gravity. "
+                  "Examination of mice after the Bion-M 1 flight directly at the landing site (return +3 h) revealed gross motor function impairment: "
+                  "the mice could not maintain steady posture.",
+
         "citations": citations,
+
         "citationsNamesWithYear": citations_names_with_year
     }
 
