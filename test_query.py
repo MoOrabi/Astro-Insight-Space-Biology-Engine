@@ -28,6 +28,7 @@ def get_question_answer(question):
                     "metadata": meta
                 })
 
-    llm.generate_llm_response(question, relevant_chunks)
-    return relevant_chunks
+    response = llm.generate_llm_response(question, relevant_chunks)
+
+    return response
 

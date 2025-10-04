@@ -24,10 +24,6 @@ def generate_llm_response(user_prompt: str, relevant_chunks: list[dict]) -> dict
         f"CONTEXT:\n{context}\n\n"
         f"---\n\n"
         f"Based on the context above, please answer the user question provided to you:\n"
-        f"And demonstrate the specific citations in relevant chunks that you used in your response "
-        f"and avoid duplication based on title and provide the References as object similar to citations, but contains only title and year with no duplications "
-        f"so your response will be answer as string, list of objects which is references , please return parsable json"
-        f"relevant chunks: {relevant_chunks}"
         f"if you think that the context has no answer please respond with "
         f"'Unfortunately, we don't have an adequate answer for your question.' with empty citations\n'"
     )
@@ -44,14 +40,32 @@ def generate_llm_response(user_prompt: str, relevant_chunks: list[dict]) -> dict
             top_p=1,
             stop=None,
             )
-        llm_text = chat_completion.choices[0].message.content
+        final_response = chat_completion.choices[0].message.content
 
+        print(final_response)
+        unique_citations = []
+        seen_titles = set()
+
+        for c in citations:
+            if c['title'] not in seen_titles:
+                unique_citations.append(c)
+                seen_titles.add(c['title'])
+
+        # استبدال القائمة القديمة بالمنقحة
+        citations = unique_citations
+        print("\n--- Citations ---")
+        if citations:
+            for counter, citation_s in enumerate(citations, 1):
+                print(f"[{counter}] {citation_s['title']} ({citation_s['year']})")
+                print(f"    URL: {citation_s['url']}")
+        else:
+            print("No citations found.")
         for m in citations:
             citations_names_with_year.append({
                 "title": m.get("title", ""),
                 "year": m.get("year", "")
             })
-        return {"answer": llm_text,
+        return {"answer": final_response,
                 "citations": citations,
                 "citationsNamesWithYear": citations_names_with_year}
     
@@ -72,44 +86,43 @@ def get_cited_answer(user_question: str, relevant_chunks) -> dict:
     print("Step 2: Generating a synthesised answer with citations...")
     # Pass the retrieved data to the generator
     response = generate_llm_response(user_question, relevant_chunks)
-    print(response)
+
     return response
 
 # 5. An executable block to run a live demonstration
-if __name__ == '__main__':
-    # Example usage:
-    question = "What was the purpose of the Bion-M 1 mission and what was the condition of the mice after the flight?"
-
-    print(f"--- Querying the Astro-Insight Engine ---")
-    print(f"Question: {question}\n")
-    test_relevant_chunks_with_metadata = [
-        {
-            "document": "The aim of mice experiments in the Bion-M 1 project was to elucidate cellular and molecular mechanisms, underlying the adaptation of key physiological systems to long-term exposure in microgravity.",
-            "metadata": {"title": "Mice in Bion-M 1 Space Mission: Training and Selection", "year": 2014,
-                         "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/"}
-        },
-        {
-            "document": "The scientific program of the Bion-M 1 project was aimed at obtaining data on mechanisms of adaptation of muscle, bone, cardiovascular, sensorimotor and nervous systems to prolonged exposure in microgravity and during post-flight recovery.",
-            "metadata": {"title": "Mice in Bion-M 1 Space Mission: Training and Selection", "year": 2014,
-                         "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/"}
-        },
-        {
-            "document": "After the flight, mice were in good condition for biomedical studies and displayed signs of pronounced disadaptation to Earth's gravity. Examination of mice after the Bion-M 1 flight directly at the landing site (return +3 h) revealed gross motor function impairment: the mice could not maintain steady posture.",
-            # --- THIS COMMA FIXES THE PROBLEM ---
-            "metadata": {"title": "Mice in Bion-M 1 Space Mission: Training and Selection", "year": 2014,
-                         "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/"}
-        }
-    ]
-
-    final_response = get_cited_answer(question, test_relevant_chunks_with_metadata)
-
-    print("\n--- AI-Generated Answer ---")
-    print(final_response['answer'])
-
-    print("\n--- Citations ---")
-    if final_response['citations']:
-        for i, citation in enumerate(final_response['citations'], 1):
-            print(f"[{i}] {citation['title']} ({citation['year']})")
-            print(f"    URL: {citation['url']}")
-    else:
-        print("No citations found.")
+# if __name__ == '__main__':
+#     # Example usage:
+#     question = "What was the purpose of the Bion-M 1 mission and what was the condition of the mice after the flight?"
+#
+#     print(f"--- Querying the Astro-Insight Engine ---")
+#     print(f"Question: {question}\n")
+#     test_relevant_chunks_with_metadata = [
+#         {
+#             "document": "The aim of mice experiments in the Bion-M 1 project was to elucidate cellular and molecular mechanisms, underlying the adaptation of key physiological systems to long-term exposure in microgravity.",
+#             "metadata": {"title": "Mice in Bion-M 1 Space Mission: Training and Selection", "year": 2014,
+#                          "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/"}
+#         },
+#         {
+#             "document": "The scientific program of the Bion-M 1 project was aimed at obtaining data on mechanisms of adaptation of muscle, bone, cardiovascular, sensorimotor and nervous systems to prolonged exposure in microgravity and during post-flight recovery.",
+#             "metadata": {"title": "Mice in Bion-M 1 Space Mission: Training and Selection", "year": 2014,
+#                          "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/"}
+#         },
+#         {
+#             "document": "After the flight, mice were in good condition for biomedical studies and displayed signs of pronounced disadaptation to Earth's gravity. Examination of mice after the Bion-M 1 flight directly at the landing site (return +3 h) revealed gross motor function impairment: the mice could not maintain steady posture.",
+#             # --- THIS COMMA FIXES THE PROBLEM ---
+#             "metadata": {"title": "Mice in Bion-M 1 Space Mission: Training and Selection", "year": 2014,
+#                          "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/"}
+#         }
+#     ]
+#
+#     final_response = get_cited_answer(question, test_relevant_chunks_with_metadata)
+#
+#     print("\n--- AI-Generated Answer ---")
+#     print(final_response['answer'])
+#
+#     if final_response['citations']:
+#         for i, citation in enumerate(final_response['citations'], 1):
+#             print(f"[{i}] {citation['title']} ({citation['year']})")
+#             print(f"    URL: {citation['url']}")
+#     else:
+#         print("No citations found.")
